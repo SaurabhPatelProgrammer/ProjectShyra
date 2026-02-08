@@ -13,7 +13,7 @@ class LLMSettings:
     """Settings for the language model."""
     
     # use "ollama" or "huggingface" - pick what works for you
-    provider: str = "huggingface"
+    provider: str = "ollama"
     
     # ollama model name - mistral is fast and good enough
     ollama_model: str = "mistral"

@@ -73,7 +73,7 @@ class DecisionEngine:
                 }
             }
             
-            response = requests.post(url, json=payload, timeout=60)
+            response = requests.post(url, json=payload, timeout=300)
             response.raise_for_status()
             
             result = response.json()
