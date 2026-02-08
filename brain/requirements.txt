@@ -1,0 +1,28 @@
+# SHYRA Brain - requirements.txt
+# All free and open-source tools
+
+# web framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.5.0
+
+# llm stuff
+transformers>=4.35.0
+torch>=2.1.0
+requests>=2.31.0
+
+# embeddings and vector store
+sentence-transformers>=2.2.0
+faiss-cpu>=1.7.4
+
+# audio processing (for voice)
+soundfile>=0.12.0
+librosa>=0.10.0
+
+# image processing (for vision)
+Pillow>=10.0.0
+easyocr>=1.7.0
+
+# utilities
+numpy>=1.24.0
+python-multipart>=0.0.6
