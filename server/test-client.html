@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SHYRA Socket.IO Test Client</title>
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+    
+    .status {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    
+    .status.connected {
+      background: #10b981;
+      color: white;
+    }
+    
+    .status.disconnected {
+      background: #ef4444;
+      color: white;
+    }
+    
+    .content {
+      padding: 30px;
+    }
+    
+    .config-section {
+      margin-bottom: 30px;
+    }
+    
+    .config-section h2 {
+      color: #667eea;
+      margin-bottom: 15px;
+      font-size: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .form-group input, .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+    
+    .form-group input:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      transition: transform 0.2s;
+    }
+    
+    button:hover {
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    .messages {
+      background: #f9fafb;
+      border-radius: 6px;
+      padding: 15px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+    
+    .message {
+      padding: 10px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .message.info {
+      background: #dbeafe;
+      border-left: 4px solid #3b82f6;
+    }
+    
+    .message.success {
+      background: #d1fae5;
+      border-left: 4px solid #10b981;
+    }
+    
+    .message.error {
+      background: #fee2e2;
+      border-left: 4px solid #ef4444;
+    }
+    
+    .message.event {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+    }
+    
+    .timestamp {
+      color: #6b7280;
+      font-size: 12px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🧠 SHYRA Socket.IO Test Client</h1>
+      <div class="status disconnected" id="status">Disconnected</div>
+      <div style="margin-top: 10px; font-size: 14px;" id="sessionInfo"></div>
+    </div>
+    
+    <div class="content">
+      <div class="config-section">
+        <h2>⚙️ Connection Configuration</h2>
+        <div class="form-group">
+          <label>Server URL</label>
+          <input type="text" id="serverUrl" value="http://localhost:3000" placeholder="http://localhost:3000">
+        </div>
+        <div class="form-group">
+          <label>JWT Token (Get from /api/users/login or /api/devices/auth)</label>
+          <input type="text" id="token" placeholder="Paste your JWT token here">
+        </div>
+        <button onclick="connect()">🔌 Connect</button>
+        <button onclick="disconnect()">🔌 Disconnect</button>
+      </div>
+      
+      <div class="config-section">
+        <h2>📨 Send Event</h2>
+        <div class="form-group">
+          <label>Event Type</label>
+          <input type="text" id="eventType" value="test_command" placeholder="voice_command, sensor_data, etc.">
+        </div>
+        <div class="form-group">
+          <label>Source</label>
+          <input type="text" id="eventSource" value="TEST_CLIENT" placeholder="ESP32_001, MOBILE_APP, etc.">
+        </div>
+        <div class="form-group">
+          <label>Event Data (JSON)</label>
+          <textarea id="eventData" rows="4" placeholder='{"command": "hello", "value": 123}'>{"message": "Hello SHYRA!", "test": true}</textarea>
+        </div>
+        <button onclick="sendEvent()">🚀 Send Event</button>
+        <button onclick="sendPing()">💓 Ping</button>
+      </div>
+      
+      <div class="config-section">
+        <h2>📋 Messages</h2>
+        <button onclick="clearMessages()">🗑️ Clear Messages</button>
+        <div class="messages" id="messages"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let socket = null;
+    
+    function addMessage(type, message) {
+      const messagesDiv = document.getElementById('messages');
+      const timestamp = new Date().toLocaleTimeString();
+      const messageDiv = document.createElement('div');
+      messageDiv.className = `message ${type}`;
+      messageDiv.innerHTML = `<span class="timestamp">${timestamp}</span>${message}`;
+      messagesDiv.appendChild(messageDiv);
+      messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+    
+    function updateStatus(connected) {
+      const statusDiv = document.getElementById('status');
+      if (connected) {
+        statusDiv.className = 'status connected';
+        statusDiv.textContent = 'Connected ✅';
+      } else {
+        statusDiv.className = 'status disconnected';
+        statusDiv.textContent = 'Disconnected ❌';
+        document.getElementById('sessionInfo').textContent = '';
+      }
+    }
+    
+    function connect() {
+      const serverUrl = document.getElementById('serverUrl').value;
+      const token = document.getElementById('token').value;
+      
+      if (!token) {
+        addMessage('error', 'Please enter a JWT token first!');
+        return;
+      }
+      
+      if (socket && socket.connected) {
+        addMessage('info', 'Already connected. Disconnect first.');
+        return;
+      }
+      
+      addMessage('info', `Connecting to ${serverUrl}...`);
+      
+      socket = io(serverUrl, {
+        auth: { token },
+        transports: ['websocket', 'polling']
+      });
+      
+      socket.on('connect', () => {
+        updateStatus(true);
+        addMessage('success', `Connected! Socket ID: ${socket.id}`);
+      });
+      
+      socket.on('auth:success', (data) => {
+        addMessage('success', `✅ Authentication successful!`);
+        document.getElementById('sessionInfo').textContent = `Session ID: ${data.sessionId}`;
+      });
+      
+      socket.on('auth:error', (data) => {
+        addMessage('error', `❌ Authentication failed: ${data.error || 'Unknown error'}`);
+      });
+      
+      socket.on('disconnect', () => {
+        updateStatus(false);
+        addMessage('info', 'Disconnected from server');
+      });
+      
+      socket.on('connect_error', (error) => {
+        addMessage('error', `Connection error: ${error.message}`);
+      });
+      
+      socket.on('event:received', (data) => {
+        addMessage('event', `📨 Event received: ${data.eventId} - Status: ${data.status}`);
+      });
+      
+      socket.on('event:processing', (data) => {
+        addMessage('event', `⚙️ Processing event: ${data.eventId}`);
+      });
+      
+      socket.on('event:completed', (data) => {
+        addMessage('success', `✅ Event completed: ${data.eventId}<br>Response: <pre>${JSON.stringify(data.response, null, 2)}</pre>`);
+      });
+      
+      socket.on('event:failed', (data) => {
+        addMessage('error', `❌ Event failed: ${data.error}`);
+      });
+      
+      socket.on('brain:response', (data) => {
+        addMessage('success', `🧠 Brain Response:<br><pre>${JSON.stringify(data, null, 2)}</pre>`);
+      });
+      
+      socket.on('pong', () => {
+        addMessage('info', '💓 Pong received - Connection alive');
+      });
+      
+      socket.on('system:message', (data) => {
+        addMessage('info', `📢 System: ${data.message}`);
+      });
+    }
+    
+    function disconnect() {
+      if (socket) {
+        socket.close();
+        socket = null;
+        updateStatus(false);
+        addMessage('info', 'Disconnected by user');
+      }
+    }
+    
+    function sendEvent() {
+      if (!socket || !socket.connected) {
+        addMessage('error', 'Not connected! Connect first.');
+        return;
+      }
+      
+      const type = document.getElementById('eventType').value;
+      const source = document.getElementById('eventSource').value;
+      const dataText = document.getElementById('eventData').value;
+      
+      try {
+        const eventData = JSON.parse(dataText);
+        
+        socket.emit('event:send', {
+          type,
+          source,
+          eventData
+        });
+        
+        addMessage('info', `📤 Sent event: ${type} from ${source}`);
+      } catch (error) {
+        addMessage('error', `Invalid JSON in event data: ${error.message}`);
+      }
+    }
+    
+    function sendPing() {
+      if (!socket || !socket.connected) {
+        addMessage('error', 'Not connected! Connect first.');
+        return;
+      }
+      
+      socket.emit('ping');
+      addMessage('info', '💓 Ping sent');
+    }
+    
+    function clearMessages() {
+      document.getElementById('messages').innerHTML = '';
+    }
+    
+    // Initial message
+    addMessage('info', 'Welcome to SHYRA Socket.IO Test Client! Connect to get started.');
+  </script>
+</body>
+</html>

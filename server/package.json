@@ -1,0 +1,41 @@
+{
+    "name": "shyra-nervous-system",
+    "version": "1.0.0",
+    "description": "Production-ready Node.js backend for SHYRA AI Assistant - Acts as nervous system connecting devices, apps, and AI Brain",
+    "main": "index.js",
+    "scripts": {
+        "start": "node index.js",
+        "dev": "nodemon index.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "shyra",
+        "ai",
+        "backend",
+        "socket.io",
+        "esp32",
+        "robotics"
+    ],
+    "author": "Saurabh Patel",
+    "license": "MIT",
+    "dependencies": {
+        "express": "^4.18.2",
+        "socket.io": "^4.6.1",
+        "axios": "^1.6.7",
+        "jsonwebtoken": "^9.0.2",
+        "bcryptjs": "^2.4.3",
+        "dotenv": "^16.4.1",
+        "cors": "^2.8.5",
+        "helmet": "^7.1.0",
+        "morgan": "^1.10.0",
+        "uuid": "^9.0.1",
+        "mongoose": "^8.1.1"
+    },
+    "devDependencies": {
+        "nodemon": "^3.0.3"
+    },
+    "engines": {
+        "node": ">=18.0.0",
+        "npm": ">=9.0.0"
+    }
+}
